@@ -1,0 +1,46 @@
+version: '3.8'
+
+networks:
+  my_app_network:
+    driver: bridge
+
+volumes:
+  cert_data:
+  web_data:
+
+services:
+  app:
+    image: dino2895/iot-flask:latest
+    container_name: iot-flask
+    restart: always
+    networks:
+      - my_app_network
+    ports:
+      - "5000:5000"
+    # 如果你的 Flask 應用程式需要環境變數，可以在這裡定義
+    # environment:
+    #   - DB_HOST=your_db_host
+    #   - DB_NAME=your_db_name
+    #   - DB_USER=your_db_user
+    #   - DB_PASSWORD=your_db_password
+    # 建議使用 .env 檔案並在 docker-compose.yml 中載入
+    env_file:
+      - .env
+    # 如果你的 Flask 應用程式有其他依賴的卷，可以在這裡定義
+    # volumes:
+    #   - ./app_data:/app/data
+
+  nginx:
+    image: dino2895/iot-nginx-certbot:latest
+    container_name: my_nginx_certbot
+    networks:
+      - my_app_network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - cert_data:/etc/letsencrypt
+      - web_data:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
