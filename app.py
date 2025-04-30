@@ -76,5 +76,69 @@ def receive_sensor_data():
     else:
         return jsonify({"error": "無法連接到資料庫"}), 500
 
+@app.route('/get_sensor_data', methods=['GET'])
+def get_sensor_data():
+    """讀取資料庫中的感測器數據，可以根據 device_id 過濾。"""
+    device_id = request.args.get('device_id')  # 從 URL query string 取得 device_id，例如 /get_sensor_data?device_id=abc123
+
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor()
+        try:
+            if device_id:
+                cur.execute("""
+                    SELECT id, device_id, mobile_timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
+                    FROM sensor_data
+                    WHERE device_id = %s
+                    ORDER BY mobile_timestamp DESC
+                """, (device_id,))
+            else:
+                cur.execute("""
+                    SELECT id, device_id, mobile_timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
+                    FROM sensor_data
+                    ORDER BY mobile_timestamp DESC
+                """)
+            
+            rows = cur.fetchall()
+            cur.close()
+            conn.close()
+
+            # 將查詢結果轉成 JSON 格式
+            data_list = []
+            for row in rows:
+                data_list.append({
+                    "id": row[0],
+                    "device_id": row[1],
+                    "mobile_timestamp": row[2].isoformat(),  # datetime 轉成 ISO 格式字串
+                    "accel_x": row[3],
+                    "accel_y": row[4],
+                    "accel_z": row[5],
+                    "gyro_x": row[6],
+                    "gyro_y": row[7],
+                    "gyro_z": row[8]
+                })
+
+            return jsonify(data_list), 200
+        except psycopg2.Error as e:
+            cur.close()
+            conn.close()
+            return jsonify({"error": f"讀取數據時發生錯誤: {e}"}), 500
+    else:
+        return jsonify({"error": "無法連接到資料庫"}), 500
+    
+@app.route('/health', methods=['GET'])
+def health_check():
+    """提供 ECS 的 Health Check API，回傳 200 OK"""
+    return jsonify({"status": "ok"}), 200
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    """簡單測試用 API，回傳 'pong'"""
+    return jsonify({"message": "pong"}), 200
+
+@app.route('/', methods=['GET'])
+def slash():
+    return jsonify({"message": "ok"}), 200
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5000)
