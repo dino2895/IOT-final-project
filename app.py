@@ -76,7 +76,7 @@ def receive_sensor_data():
     else:
         return jsonify({"error": "無法連接到資料庫"}), 500
 
-@app.route('/get_sensor_data', methods=['GET'])
+@app.route('/sensor_data', methods=['GET'])
 def get_sensor_data():
     """讀取資料庫中的感測器數據，可以根據 device_id 過濾。"""
     device_id = request.args.get('device_id')  # 從 URL query string 取得 device_id，例如 /get_sensor_data?device_id=abc123
@@ -139,6 +139,37 @@ def ping():
 @app.route('/', methods=['GET'])
 def slash():
     return jsonify({"message": "ok"}), 200
+
+# @app.route('/debug_db', methods=['GET'])
+# def debug_db():
+#     """測試資料庫連線，顯示目前的連線參數與錯誤訊息"""
+#     response = {
+#         "DB_HOST": DB_HOST,
+#         "DB_NAME": DB_NAME,
+#         "DB_USER": DB_USER,
+#         "status": "unknown",
+#         "error": None
+#     }
+#     try:
+#         conn = psycopg2.connect(
+#             host=DB_HOST,
+#             database=DB_NAME,
+#             user=DB_USER,
+#             password=DB_PASSWORD
+#         )
+#         cur = conn.cursor()
+#         cur.execute('SELECT version();')
+#         version = cur.fetchone()
+#         cur.close()
+#         conn.close()
+#         response["status"] = "connected"
+#         response["db_version"] = version[0]
+#         return jsonify(response), 200
+#     except psycopg2.OperationalError as e:
+#         response["status"] = "connection_failed"
+#         response["error"] = str(e)
+#         return jsonify(response), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
