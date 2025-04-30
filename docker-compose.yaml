@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   my_app_network:
     driver: bridge
