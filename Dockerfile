@@ -17,7 +17,7 @@ COPY app.py .
 # 設定環境變數 (如果你的 .env 檔案中有敏感資訊，不建議直接複製到映像檔中。
 # 更好的做法是在運行容器時透過 Docker 的 --env 或 --env-file 傳遞)
 # 如果你仍然想複製 .env，請取消註解下一行：
-COPY .env .
+# COPY .env .
 
 # 指定 Flask 應用程式啟動的命令
 CMD ["flask", "run", "--host=0.0.0.0"]
