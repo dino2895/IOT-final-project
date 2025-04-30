@@ -31,6 +31,8 @@ services:
   proxy:
     image: 'docker.io/jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
+    networks:
+      - my_app_network
     ports:
       - '80:80'
       - '81:81'
