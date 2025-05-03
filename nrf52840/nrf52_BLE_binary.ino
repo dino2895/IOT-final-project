@@ -27,7 +27,7 @@ void setup() {
     while (1);
   }
 
-  BLE.setLocalName("nRF52-IMU-BIN");
+  BLE.setLocalName("nRF52-IMU-BIN-01");
   BLE.setAdvertisedService(imuService);
   imuService.addCharacteristic(imuBinaryChar);
   BLE.addService(imuService);
@@ -46,12 +46,12 @@ void loop() {
 
     while (central.connected()) {
       // 讀取感測器資料
-      float accelX = myIMU.readFloatAccelX();
-      float accelY = myIMU.readFloatAccelY();
-      float accelZ = myIMU.readFloatAccelZ();
-      float gyroX  = myIMU.readFloatGyroX();
-      float gyroY  = myIMU.readFloatGyroY();
-      float gyroZ  = myIMU.readFloatGyroZ();
+      float accelX = myIMU.readFloatGyroX();
+      float accelY = myIMU.readFloatGyroY();
+      float accelZ = myIMU.readFloatGyroZ();
+      float gyroX  = myIMU.readFloatAccelX();
+      float gyroY  = myIMU.readFloatAccelY();
+      float gyroZ  = myIMU.readFloatAccelZ();
 
       // 建立 binary buffer
       uint8_t buffer[24]; // 6 個 float 各佔 4 bytes
