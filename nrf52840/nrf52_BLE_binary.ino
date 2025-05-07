@@ -2,39 +2,49 @@
 #include <LSM6DS3.h>
 #include <Wire.h>
 
-// 建立 IMU 物件
+// IMU 初始化
 LSM6DS3 myIMU(I2C_MODE, 0x6A); // I2C 位址
 
-// 建立 BLE 服務與特徵值（改用 binary characteristic）
+// BLE 服務與特徵
 BLEService imuService("19B10000-E8F2-537E-4F6C-D104768A1214");
 BLECharacteristic imuBinaryChar("19B10002-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify, 24); // 6 floats = 24 bytes
 
-void setup() {
-  Serial.begin(9600);
-  while (!Serial);
+// 板載藍燈 D14
+const int ledPin = 14;
+bool ledState = false;
+unsigned long lastBlinkTime = 0;
+const unsigned long blinkInterval = 300;
 
-  // 初始化 IMU
+void startBLE() {
+  BLE.stopAdvertise();
+  BLE.advertise();
+  Serial.println("BLE advertising restarted");
+}
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  Serial.begin(9600);
+  delay(100);
+  Serial.println("Starting...");
+
   if (myIMU.begin() != 0) {
     Serial.println("IMU Device error");
-    while (1);
-  } else {
-    Serial.println("IMU ready. Binary streaming started.");
+    while (1); // 停止執行
   }
 
-  // 初始化 BLE
   if (!BLE.begin()) {
-    Serial.println("BLE initialization failed!");
-    while (1);
+    Serial.println("BLE init failed");
+    while (1); // 停止執行
   }
 
-  BLE.setLocalName("nRF52-IMU-BIN-01");
+  BLE.setLocalName("nRF52-IMU-BIN-02");
   BLE.setAdvertisedService(imuService);
   imuService.addCharacteristic(imuBinaryChar);
   BLE.addService(imuService);
-  BLE.setConnectionInterval(6, 12); // 建議連線間隔 7.5ms~15ms
 
-  BLE.advertise();
-  Serial.println("BLE advertising started");
+  startBLE();
 }
 
 void loop() {
@@ -44,6 +54,8 @@ void loop() {
     Serial.print("Connected to central: ");
     Serial.println(central.address());
 
+    digitalWrite(ledPin, HIGH); // 綠燈恆亮
+
     while (central.connected()) {
       // 讀取感測器資料
       float accelX = myIMU.readFloatGyroX();
@@ -52,16 +64,14 @@ void loop() {
       float gyroX  = myIMU.readFloatAccelX();
       float gyroY  = myIMU.readFloatAccelY();
       float gyroZ  = myIMU.readFloatAccelZ();
-
       // 建立 binary buffer
-      uint8_t buffer[24]; // 6 個 float 各佔 4 bytes
+      uint8_t buffer[24] = {0}; // 6 個 float 各佔 4 bytes
       memcpy(buffer,      &accelX, 4);
       memcpy(buffer + 4,  &accelY, 4);
       memcpy(buffer + 8,  &accelZ, 4);
       memcpy(buffer + 12, &gyroX,  4);
       memcpy(buffer + 16, &gyroY,  4);
       memcpy(buffer + 20, &gyroZ,  4);
-
       // 傳送 binary 資料
       imuBinaryChar.writeValue(buffer, sizeof(buffer));
 
@@ -78,9 +88,21 @@ void loop() {
       Serial.println(gyroZ, 2);
       Serial.println("--------------------------\n");
 
-      delay(5); // 控制頻率，可視需求調整
+      delay(20);
     }
 
     Serial.println("Central disconnected");
+    digitalWrite(ledPin, LOW); // 離線後重新進入閃爍狀態
+    startBLE();
+  }
+
+  // 尚未連線時閃綠燈
+  if (!BLE.connected()) {
+    unsigned long currentMillis = millis();
+    if (currentMillis - lastBlinkTime >= blinkInterval) {
+      ledState = !ledState;
+      digitalWrite(ledPin, ledState ? HIGH : LOW);
+      lastBlinkTime = currentMillis;
+    }
   }
 }
