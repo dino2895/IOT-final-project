@@ -334,6 +334,75 @@ def get_inference_data():
     else:
         return jsonify({"error": "無法連接到資料庫"}), 500
 
+
+@app.route('/inferencebydata', methods=['POST'])
+def get_inference_data():
+    try:
+        # Step 1: 檢查請求格式與內容
+        if not request.is_json:
+            return jsonify({"error": "請求必須是 JSON 格式"}), 400
+
+        json_data = request.get_json()
+
+        if not isinstance(json_data.get("data"), list):
+            return jsonify({"error": "請求中的 'data' 必須是 JSON 陣列"}), 400
+
+        data_list = json_data["data"]
+
+        # Step 2: 轉換成 numpy 陣列
+        all_array = np.array([
+            [record['accel_x'], record['accel_y'], record['accel_z'],
+             record['gyro_x'], record['gyro_y'], record['gyro_z']]
+            for record in data_list
+        ])  # shape: (n, 6)
+
+        if all_array.shape[0] < 30:
+            return jsonify({"error": "提供的資料筆數不足 30 筆"}), 400
+
+        # Step 3: 找 accel_y 絕對值最大值所在位置
+        accel_y = np.abs(all_array[:, 1])
+        peak_index = np.argmax(accel_y)
+
+        start = max(0, peak_index - 20)
+        end = min(len(all_array), peak_index + 10)
+        selected_data = all_array[start:end]
+
+        if selected_data.shape[0] < 30:
+            pad_len = 30 - selected_data.shape[0]
+            selected_data = np.pad(selected_data, ((0, pad_len), (0, 0)), mode='constant')
+
+        # Step 5: 準備模型輸入形狀
+        all_data = selected_data  # shape: (30, 6)
+
+        # 分類模型輸入 shape: (1, 30, 6, 1)
+        all_data_classification = all_data[np.newaxis, ..., np.newaxis]
+
+        # 測速模型輸入 shape: (1, 30, 6)
+        all_data_speed = all_data[np.newaxis, ...]
+
+        # Step 6: 推論
+        classification_result = classification_model.predict(all_data_classification)  # shape: (1, 7)
+        predicted_index = apply_confidence_threshold(classification_result)[0]
+        predicted_label = label_map[predicted_index]
+
+        speed_result = speedestimate_model.predict(all_data_speed)  # shape: (1, 1)
+        speed = float(np.clip(speed_result[0][0], 15.0, 70.0))
+
+        # Step 7: 回傳 JSON 結果
+        return jsonify({
+            #"classification_prediction": {
+            #    "raw": classification_result[0].tolist(),
+            #    "label": predicted_label
+            #},
+            "classification_prediction": predicted_label,
+            "speed_prediction": speed,
+            #"selected_index_range": [int(start), int(end - 1)],
+            #"center_index": int(peak_index)
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"推論時發生錯誤: {str(e)}"}), 500
+
 def apply_confidence_threshold(pred_probs, threshold=0.6):
     max_probs = np.max(pred_probs, axis=1)
     predicted_labels = np.argmax(pred_probs, axis=1)
