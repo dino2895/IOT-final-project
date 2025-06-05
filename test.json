@@ -1,0 +1,24 @@
+[
+    {
+        "accel_x": 1.23,
+        "accel_y": -0.45,
+        "accel_z": 9.81,
+        "device_id": "your_mobile_device_unique_id",
+        "gyro_x": 0.01,
+        "gyro_y": -0.02,
+        "gyro_z": 0.03,
+        "id": 1,
+        "mobile_timestamp": "2025-04-24T07:46:00"
+    },
+    {
+        "accel_x": 1.23,
+        "accel_y": -0.45,
+        "accel_z": 9.81,
+        "device_id": "your_mobile_device_unique_id",
+        "gyro_x": 0.01,
+        "gyro_y": -0.02,
+        "gyro_z": 0.03,
+        "id": 2,
+        "mobile_timestamp": "2025-04-24T07:46:00"
+    }
+]
