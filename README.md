@@ -145,3 +145,26 @@ https://iot.dinochou.dev/ping
     "message": "pong"
 }
 ```
+
+---
+
+### 5. Inference `/inference?end-timestamp{timestamp}&device-id={device_id}`
+**功能**: 輸入要查找的時間點，找到在那之前一秒內的擊球事件與球速。
+
+**範例請求**:
+```URL
+https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
+```
+
+**方法**: `GET`
+
+**回應**:
+- 成功: `200 OK`，回傳 JSON 格式的數據列表。
+- 錯誤: `400 Bad Request` , `500 Internal Server Error`, `500 讀取數據時發生錯誤`
+
+**範例回應**:
+```json
+[
+    {"classification_prediction":["Clear"],"speed_prediction":[[70.0]]}
+]
+```
