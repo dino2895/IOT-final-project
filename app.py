@@ -1,7 +1,14 @@
 from flask import Flask, request, jsonify
 import psycopg2
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import tensorflow as tf
+import numpy as np
+
+
+# 載入模型
+classification_model = tf.keras.models.load_model('IOT_Model/badmiton_classification.keras')
+speedestimate_model = tf.keras.models.load_model('IOT_Model/200_speed_estimate.keras')
 
 app = Flask(__name__)
 
@@ -164,6 +171,174 @@ def ping():
 @app.route('/', methods=['GET'])
 def slash():
     return jsonify({"message": "ok"}), 200
+
+@app.route('/inference', methods=['GET'])
+def get_inference_data():
+    device_id = request.args.get('device-id')
+    end_timestamp = request.args.get('end-timestamp')
+
+    if not end_timestamp:
+        return jsonify({"error": "缺少 end-timestamp 參數"}), 400
+
+    try:
+        end_timestamp = datetime.fromisoformat(end_timestamp)
+    except Exception as e:
+        return jsonify({"error": f"end-timestamp 格式錯誤: {e}"}), 400
+
+    start_timestamp = end_timestamp - timedelta(seconds=1)  # end_timestamp 前一秒
+
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor()
+        try:
+            # 第一次查詢：搜尋在指定時間範圍內 accel_y 絕對值最大的資料
+            query = """
+                SELECT id, device_id, mobile_timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
+                FROM sensor_data
+                WHERE mobile_timestamp BETWEEN %s AND %s
+                ORDER BY ABS(accel_y) DESC
+                LIMIT 1
+            """
+            params = [start_timestamp, end_timestamp]
+            if device_id:
+                query += " AND device_id = %s"
+                params.append(device_id)
+
+            cur.execute(query, tuple(params))
+            row = cur.fetchone()  # 取得第一筆資料
+            if not row:
+                return jsonify({"error": "在指定範圍內未找到資料"}), 404
+
+            # 取得該筆資料的 mobile_timestamp
+            target_timestamp = row[2]
+
+            # 透過取得的target_timestamp查詢前 20 筆資料
+            query_before = """
+                SELECT id, device_id, mobile_timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
+                FROM sensor_data
+                WHERE mobile_timestamp < %s
+                ORDER BY mobile_timestamp DESC
+                LIMIT 20
+            """
+            params_before = [target_timestamp]
+            if device_id:
+                query_before += " AND device_id = %s"
+                params_before.append(device_id)
+
+            cur.execute(query_before, tuple(params_before))
+            rows_before = cur.fetchall()
+
+            # 查詢後 9 筆資料
+            query_after = """
+                SELECT id, device_id, mobile_timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
+                FROM sensor_data
+                WHERE mobile_timestamp > %s
+                ORDER BY mobile_timestamp ASC
+                LIMIT 9
+            """
+            params_after = [target_timestamp]
+            if device_id:
+                query_after += " AND device_id = %s"
+                params_after.append(device_id)
+
+            cur.execute(query_after, tuple(params_after))
+            rows_after = cur.fetchall()
+
+            # 合併這30筆資料
+            data_list = [] #這個是包含device_id跟mobile_timestamp
+            all_data = [] #這個沒有
+
+            # 合併前 20 筆資料
+            for row in rows_before:
+                data_list.append({
+                    "id": row[0],
+                    "device_id": row[1],
+                    "mobile_timestamp": row[2].isoformat(),
+                    "accel_x": row[3],
+                    "accel_y": row[4],
+                    "accel_z": row[5],
+                    "gyro_x": row[6],
+                    "gyro_y": row[7],
+                    "gyro_z": row[8]
+                })
+                all_data.append([row[3], row[4], row[5], row[6], row[7], row[8]])
+
+            # 添加accel_y最大那筆
+            data_list.append({
+                "id": row[0],
+                "device_id": row[1],
+                "mobile_timestamp": row[2].isoformat(),
+                "accel_x": row[3],
+                "accel_y": row[4],
+                "accel_z": row[5],
+                "gyro_x": row[6],
+                "gyro_y": row[7],
+                "gyro_z": row[8]
+            })
+            all_data.append([row[3], row[4], row[5], row[6], row[7], row[8]])
+
+            # 合併後 9 筆資料
+            for row in rows_after:
+                data_list.append({
+                    "id": row[0],
+                    "device_id": row[1],
+                    "mobile_timestamp": row[2].isoformat(),
+                    "accel_x": row[3],
+                    "accel_y": row[4],
+                    "accel_z": row[5],
+                    "gyro_x": row[6],
+                    "gyro_y": row[7],
+                    "gyro_z": row[8]
+                })
+                all_data.append([row[3], row[4], row[5], row[6], row[7], row[8]])
+
+            # 將要使用的資料轉換為 numpy 陣列，形狀為 (30, 6)
+            all_data = np.array(all_data)
+
+            # 調整形狀為 (1, 30, 6, 1)
+            all_data_classification = all_data[np.newaxis, ..., np.newaxis]
+
+            # 給分類模型進行推理
+            classification_result = classification_model.predict(all_data_classification)
+
+            # 調整 all_data shape 為 (1, 30, 6) 給 speedestimate_model
+            all_data_speed = all_data[np.newaxis, ...]
+            speed_result = speedestimate_model.predict(all_data_speed)
+
+            # 回傳結果
+            label_map = {
+                0: "Clear",  # 高遠
+                1: "Smash",  # 殺球
+                2: "Drive",  # 平抽
+                3: "Net",    # 網前
+                4: "Lob",    # 挑球
+                5: "Other"   # 其他
+            }
+            
+            predicted_indices = apply_confidence_threshold(classification_result)
+            predicted_labels = [label_map[i] for i in predicted_indices]
+            speed_result = np.clip(speed_result, 20, 70)
+
+            response = {
+                # "data": data_list,
+                "classification_prediction": predicted_labels,
+                "speed_prediction": speed_result.tolist()
+            }
+
+            return jsonify(response), 200
+
+        except psycopg2.Error as e:
+            cur.close()
+            conn.close()
+            return jsonify({"error": f"讀取數據時發生錯誤: {e}"}), 500
+    else:
+        return jsonify({"error": "無法連接到資料庫"}), 500
+
+def apply_confidence_threshold(pred_probs, threshold=0.6):
+    max_probs = np.max(pred_probs, axis=1)
+    predicted_labels = np.argmax(pred_probs, axis=1)
+    predicted_labels[max_probs < threshold] = 5  # 將低信心的分類為 'Other'
+    return predicted_labels
 
 # @app.route('/debug_db', methods=['GET'])
 # def debug_db():
