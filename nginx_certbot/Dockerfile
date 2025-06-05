@@ -9,6 +9,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 # 將你的 Nginx 設定檔複製到容器中
 COPY nginx.conf /etc/nginx/conf.d/
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 設定 Certbot 運行的腳本
 COPY certbot_run.sh /usr/local/bin/

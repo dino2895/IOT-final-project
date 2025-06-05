@@ -7,30 +7,33 @@ volumes:
   web_data:
 
 services:
-  app:
-    image: dino2895/iot-flask:latest
-    container_name: iot-flask
-    restart: always
-    networks:
-      - my_app_network
-    ports:
-      - "5000:5000"
-    # 如果你的 Flask 應用程式需要環境變數，可以在這裡定義
-    # environment:
-    #   - DB_HOST=your_db_host
-    #   - DB_NAME=your_db_name
-    #   - DB_USER=your_db_user
-    #   - DB_PASSWORD=your_db_password
-    # 建議使用 .env 檔案並在 docker-compose.yml 中載入
-    env_file:
-      - .env
-    # 如果你的 Flask 應用程式有其他依賴的卷，可以在這裡定義
-    # volumes:
-    #   - ./app_data:/app/data
+  # app:
+  #   image: dino2895/iot-flask:latest
+  #   container_name: iot-flask
+  #   hostname: iot-flask
+  #   restart: always
+  #   networks:
+  #     - my_app_network
+  #   ports:
+  #     - "5000:5000"
+  #   # 如果你的 Flask 應用程式需要環境變數，可以在這裡定義
+  #   # environment:
+  #   #   - DB_HOST=your_db_host
+  #   #   - DB_NAME=your_db_name
+  #   #   - DB_USER=your_db_user
+  #   #   - DB_PASSWORD=your_db_password
+  #   # 建議使用 .env 檔案並在 docker-compose.yml 中載入
+  #   env_file:
+  #     - .env
+  #   # 如果你的 Flask 應用程式有其他依賴的卷，可以在這裡定義
+  #   # volumes:
+  #   #   - ./app_data:/app/data
 
   proxy:
     image: 'docker.io/jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
+    container_name: nginx-proxy-manager
+    hostname: nginx-proxy-manager
     ports:
       - '80:80'
       - '81:81'
