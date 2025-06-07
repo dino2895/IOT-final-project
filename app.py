@@ -320,10 +320,12 @@ def get_inference_data():
             speed_result = np.clip(speed_result, 20, 70)
 
             response = {
-                # "data": data_list,
-                "classification_prediction": predicted_labels,
-                "speed_prediction": speed_result.tolist()
+                "classification_prediction": predicted_labels[0] if isinstance(predicted_labels, list) and len(predicted_labels) > 0 else predicted_labels,
+                "speed_prediction": float(speed_result[0][0]) if hasattr(speed_result, '__getitem__') else float(speed_result)
             }
+
+            # 若 speed_result 經過 np.clip，請確保取值正確
+            response["speed_prediction"] = float(np.clip(response["speed_prediction"], 15.0, 70.0))
 
             return jsonify(response), 200
 
