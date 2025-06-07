@@ -193,7 +193,6 @@ https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
 **json輸入範例**:
 ```json
 {
-  "data": [
     {
       "accel_x": 0.12,
       "accel_y": -0.45,
@@ -234,8 +233,6 @@ https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
       "gyro_y": -0.02,
       "gyro_z": 0.01
     }
-    
-  ]
 }
 ```
 
