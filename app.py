@@ -8,7 +8,7 @@ import numpy as np
 
 # 載入模型
 classification_model = tf.keras.models.load_model('IOT_Model/badmiton_classification.keras')
-speedestimate_model = tf.keras.models.load_model('IOT_Model/200_speed_estimate.keras')
+speedestimate_model = tf.keras.models.load_model('IOT_Model/speed_estimate.keras')
 
 app = Flask(__name__)
 
@@ -342,12 +342,10 @@ def inference_data():
         if not request.is_json:
             return jsonify({"error": "請求必須是 JSON 格式"}), 400
 
-        json_data = request.get_json()
+        data_list = request.get_json()
 
-        if not isinstance(json_data.get("data"), list):
-            return jsonify({"error": "請求中的 'data' 必須是 JSON 陣列"}), 400
-
-        data_list = json_data["data"]
+        if not isinstance(data_list, list):
+            return jsonify({"error": "請求內容必須是 JSON 陣列"}), 400
 
         # Step 2: 轉換成 numpy 陣列
         all_array = np.array([
@@ -373,35 +371,29 @@ def inference_data():
 
         # Step 5: 準備模型輸入形狀
         all_data = selected_data  # shape: (30, 6)
-
-        # 分類模型輸入 shape: (1, 30, 6, 1)
-        all_data_classification = all_data[np.newaxis, ..., np.newaxis]
-
-        # 測速模型輸入 shape: (1, 30, 6)
-        all_data_speed = all_data[np.newaxis, ...]
+        all_data_classification = all_data[np.newaxis, ..., np.newaxis]  # shape: (1, 30, 6, 1)
+        all_data_speed = all_data[np.newaxis, ...]  # shape: (1, 30, 6)
 
         # Step 6: 推論
-        classification_result = classification_model.predict(all_data_classification)  # shape: (1, 7)
+        classification_result = classification_model.predict(all_data_classification)
         predicted_index = apply_confidence_threshold(classification_result)[0]
         predicted_label = label_map[predicted_index]
 
-        speed_result = speedestimate_model.predict(all_data_speed)  # shape: (1, 1)
+        speed_result = speedestimate_model.predict(all_data_speed)
         speed = float(np.clip(speed_result[0][0], 15.0, 70.0))
 
-        # Step 7: 回傳 JSON 結果
+        # Step 7: 回傳結果
         return jsonify({
-            #"classification_prediction": {
-            #    "raw": classification_result[0].tolist(),
-            #    "label": predicted_label
-            #},
             "classification_prediction": predicted_label,
-            "speed_prediction": speed,
-            #"selected_index_range": [int(start), int(end - 1)],
-            #"center_index": int(peak_index)
+            "speed_prediction": speed
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"推論時發生錯誤: {str(e)}"}), 500
+        import traceback
+        return jsonify({
+            "error": f"推論時發生錯誤: {str(e)}",
+            "trace": traceback.format_exc()
+        }), 500
 
 def apply_confidence_threshold(pred_probs, threshold=0.6):
     max_probs = np.max(pred_probs, axis=1)
