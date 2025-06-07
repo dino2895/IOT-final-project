@@ -383,6 +383,14 @@ def inference_data():
         # Step 6: 推論
         classification_result = classification_model.predict(all_data_classification)  # shape: (1, 7)
         predicted_index = apply_confidence_threshold(classification_result)[0]
+        label_map = {
+            0: "Clear",  # 高遠
+            1: "Smash",  # 殺球
+            2: "Drive",  # 平抽
+            3: "Net",    # 網前
+            4: "Lob",    # 挑球
+            5: "Other"   # 其他
+        }
         predicted_label = label_map[predicted_index]
 
         speed_result = speedestimate_model.predict(all_data_speed)  # shape: (1, 1)
