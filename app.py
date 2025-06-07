@@ -346,6 +346,7 @@ def inference_data():
 
         if not isinstance(data_list, list):
             return jsonify({"error": "請求內容必須是 JSON 陣列"}), 400
+            
 
         # Step 2: 轉換成 numpy 陣列
         all_array = np.array([
@@ -371,29 +372,35 @@ def inference_data():
 
         # Step 5: 準備模型輸入形狀
         all_data = selected_data  # shape: (30, 6)
-        all_data_classification = all_data[np.newaxis, ..., np.newaxis]  # shape: (1, 30, 6, 1)
-        all_data_speed = all_data[np.newaxis, ...]  # shape: (1, 30, 6)
+
+        # 分類模型輸入 shape: (1, 30, 6, 1)
+        all_data_classification = all_data[np.newaxis, ..., np.newaxis]
+
+        # 測速模型輸入 shape: (1, 30, 6)
+        all_data_speed = all_data[np.newaxis, ...]
 
         # Step 6: 推論
-        classification_result = classification_model.predict(all_data_classification)
+        classification_result = classification_model.predict(all_data_classification)  # shape: (1, 7)
         predicted_index = apply_confidence_threshold(classification_result)[0]
         predicted_label = label_map[predicted_index]
 
-        speed_result = speedestimate_model.predict(all_data_speed)
+        speed_result = speedestimate_model.predict(all_data_speed)  # shape: (1, 1)
         speed = float(np.clip(speed_result[0][0], 15.0, 70.0))
 
-        # Step 7: 回傳結果
+        # Step 7: 回傳 JSON 結果
         return jsonify({
+            #"classification_prediction": {
+            #    "raw": classification_result[0].tolist(),
+            #    "label": predicted_label
+            #},
             "classification_prediction": predicted_label,
-            "speed_prediction": speed
+            "speed_prediction": speed,
+            #"selected_index_range": [int(start), int(end - 1)],
+            #"center_index": int(peak_index)
         }), 200
 
     except Exception as e:
-        import traceback
-        return jsonify({
-            "error": f"推論時發生錯誤: {str(e)}",
-            "trace": traceback.format_exc()
-        }), 500
+        return jsonify({"error": f"推論時發生錯誤: {str(e)}"}), 500
 
 def apply_confidence_threshold(pred_probs, threshold=0.6):
     max_probs = np.max(pred_probs, axis=1)
