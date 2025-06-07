@@ -8,7 +8,7 @@ import numpy as np
 
 # 載入模型
 classification_model = tf.keras.models.load_model('IOT_Model/badmiton_classification.keras')
-speedestimate_model = tf.keras.models.load_model('IOT_Model/200_speed_estimate.keras')
+speedestimate_model = tf.keras.models.load_model('IOT_Model/speed_estimate.keras')
 
 app = Flask(__name__)
 
@@ -342,12 +342,11 @@ def inference_data():
         if not request.is_json:
             return jsonify({"error": "請求必須是 JSON 格式"}), 400
 
-        json_data = request.get_json()
+        data_list = request.get_json()
 
-        if not isinstance(json_data.get("data"), list):
-            return jsonify({"error": "請求中的 'data' 必須是 JSON 陣列"}), 400
-
-        data_list = json_data["data"]
+        if not isinstance(data_list, list):
+            return jsonify({"error": "請求內容必須是 JSON 陣列"}), 400
+            
 
         # Step 2: 轉換成 numpy 陣列
         all_array = np.array([
