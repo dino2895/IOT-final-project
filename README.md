@@ -164,9 +164,10 @@ https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
 
 **範例回應**:
 ```json
-[
-    {"classification_prediction":["Clear"],"speed_prediction":[[70.0]]}
-]
+{
+    "classification_prediction": "Clear",
+    "speed_prediction": 20.0
+}
 ```
 
 ### 6. POST `/inferencebydata`
@@ -423,5 +424,14 @@ https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
 **回應**:
 - 成功: `200 OK`, 回應JSON格式的球種與球速
 - 錯誤: `400 Bad Request` 或 `500 Internal Server Error` 或 `404 Not Found`
+
+**範例回應**:
+```json
+{
+    "classification_prediction": "Net",
+    "speed_prediction": 15.0
+}
+```
+
 
 ---
