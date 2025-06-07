@@ -174,66 +174,250 @@ https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
 
 **方法**: `POST`
 
-**請求 Body**:
+**請求 Body範例**:
 ```json
-{
-    {
-  "data": [
-    {"accel_x": 0,
-    "accel_y": 1,
-    "accel_z": 2,
-    "gyro_x": 3,
-    "gyro_y": 4,
-    "gyro_z": 5},
-  ]
-}
-}
-```
-
-**json輸入範例**:
-```json
-{
-    {
-      "accel_x": 0.12,
-      "accel_y": -0.45,
-      "accel_z": 9.81,
-      "gyro_x": 0.01,
-      "gyro_y": -0.02,
-      "gyro_z": 0.00
-    },
-    {
-      "accel_x": 0.13,
-      "accel_y": -0.50,
-      "accel_z": 9.79,
-      "gyro_x": 0.01,
-      "gyro_y": -0.02,
-      "gyro_z": 0.01
-    },
-    {
-      "accel_x": 0.14,
-      "accel_y": 5.23,
-      "accel_z": 9.80,
-      "gyro_x": 0.02,
-      "gyro_y": -0.01,
-      "gyro_z": 0.02
-    },
-    {
-      "accel_x": 0.11,
-      "accel_y": 15.88,
-      "accel_z": 9.76,
-      "gyro_x": 0.03,
-      "gyro_y": -0.01,
-      "gyro_z": 0.02
-    },
-    {
-      "accel_x": 0.09,
-      "accel_y": 0.35,
-      "accel_z": 9.78,
-      "gyro_x": 0.02,
-      "gyro_y": -0.02,
-      "gyro_z": 0.01
-    }
-}
+[
+  {
+    "accel_x": 0.12,
+    "accel_y": -0.45,
+    "accel_z": 9.81,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.00
+  },
+  {
+    "accel_x": 0.13,
+    "accel_y": -0.50,
+    "accel_z": 9.79,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.14,
+    "accel_y": 5.23,
+    "accel_z": 9.80,
+    "gyro_x": 0.02,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.11,
+    "accel_y": 15.88,
+    "accel_z": 9.76,
+    "gyro_x": 0.03,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.09,
+    "accel_y": 0.35,
+    "accel_z": 9.78,
+    "gyro_x": 0.02,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.12,
+    "accel_y": -0.45,
+    "accel_z": 9.81,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.00
+  },
+  {
+    "accel_x": 0.13,
+    "accel_y": -0.50,
+    "accel_z": 9.79,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.14,
+    "accel_y": 5.23,
+    "accel_z": 9.80,
+    "gyro_x": 0.02,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.11,
+    "accel_y": 15.88,
+    "accel_z": 9.76,
+    "gyro_x": 0.03,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.09,
+    "accel_y": 0.35,
+    "accel_z": 9.78,
+    "gyro_x": 0.02,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.12,
+    "accel_y": -0.45,
+    "accel_z": 9.81,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.00
+  },
+  {
+    "accel_x": 0.13,
+    "accel_y": -0.50,
+    "accel_z": 9.79,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.14,
+    "accel_y": 5.23,
+    "accel_z": 9.80,
+    "gyro_x": 0.02,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.11,
+    "accel_y": 15.88,
+    "accel_z": 9.76,
+    "gyro_x": 0.03,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.09,
+    "accel_y": 0.35,
+    "accel_z": 9.78,
+    "gyro_x": 0.02,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.12,
+    "accel_y": -0.45,
+    "accel_z": 9.81,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.00
+  },
+  {
+    "accel_x": 0.13,
+    "accel_y": -0.50,
+    "accel_z": 9.79,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.14,
+    "accel_y": 5.23,
+    "accel_z": 9.80,
+    "gyro_x": 0.02,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.11,
+    "accel_y": 15.88,
+    "accel_z": 9.76,
+    "gyro_x": 0.03,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.09,
+    "accel_y": 0.35,
+    "accel_z": 9.78,
+    "gyro_x": 0.02,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.12,
+    "accel_y": -0.45,
+    "accel_z": 9.81,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.00
+  },
+  {
+    "accel_x": 0.13,
+    "accel_y": -0.50,
+    "accel_z": 9.79,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.14,
+    "accel_y": 5.23,
+    "accel_z": 9.80,
+    "gyro_x": 0.02,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.11,
+    "accel_y": 15.88,
+    "accel_z": 9.76,
+    "gyro_x": 0.03,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.09,
+    "accel_y": 0.35,
+    "accel_z": 9.78,
+    "gyro_x": 0.02,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.12,
+    "accel_y": -0.45,
+    "accel_z": 9.81,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.00
+  },
+  {
+    "accel_x": 0.13,
+    "accel_y": -0.50,
+    "accel_z": 9.79,
+    "gyro_x": 0.01,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  },
+  {
+    "accel_x": 0.14,
+    "accel_y": 5.23,
+    "accel_z": 9.80,
+    "gyro_x": 0.02,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.11,
+    "accel_y": 15.88,
+    "accel_z": 9.76,
+    "gyro_x": 0.03,
+    "gyro_y": -0.01,
+    "gyro_z": 0.02
+  },
+  {
+    "accel_x": 0.09,
+    "accel_y": 0.35,
+    "accel_z": 9.78,
+    "gyro_x": 0.02,
+    "gyro_y": -0.02,
+    "gyro_z": 0.01
+  }
+]
 ```
 
 **回應**:
