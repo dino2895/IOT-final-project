@@ -336,7 +336,7 @@ def get_inference_data():
 
 
 @app.route('/inferencebydata', methods=['POST'])
-def get_inference_data():
+def inference_data():
     try:
         # Step 1: 檢查請求格式與內容
         if not request.is_json:
