@@ -435,3 +435,13 @@ https://iot.dinochou.dev/inference?end-timestamp=2025-05-13%2015:51:09.600096
 
 
 ---
+# IoT Video
+### 1. Video for Speed Estimation
+
+```URL
+https://drive.google.com/drive/folders/18OcG1FGXzeXsMb5WYty46dcABgE0vc50?usp=sharing
+https://ncku365-my.sharepoint.com/:f:/g/personal/q36131037_ncku_edu_tw/EhJyy0bhhkVGp52p7kuk90EBr01yi4mV-ghoqJQGHTFmyg?e=h55snF
+
+```
+
+---
